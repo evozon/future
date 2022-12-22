@@ -1,0 +1,33 @@
+{
+    "name": "evozon/future",
+    "description": "Future is a library that facilitates the upgrade process of PHP projects",
+    "type": "project",
+    "license": "proprietary",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "authors": [
+        {
+            "name": "Calin Pristavu",
+            "email": "calinpristavu@gmail.com "
+        },
+        {
+            "name": "Ioan Ovidiu Enache",
+            "email": "i.ovidiuenache@gmail.com"
+        }
+    ],
+    "bin": [
+        "bin/future"
+    ],
+    "require": {
+        "rector/rector": "0.15.*"
+    },
+    "suggest": {
+        "phpunit/phpunit": "The Future project requires a test suite in order to validate your app's functionality"
+    },
+    "config": {
+        "sort-packages": true,
+        "preferred-install": {
+            "*": "dist"
+        }
+    }
+}
