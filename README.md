@@ -8,18 +8,18 @@ Future will test if your project is able to run using the latest platform config
 
 ### 2. Dependencies Upgrade
 
-On top of the platform upgrade, it will test if your project is able to run using the latest version of your direct Composer dependencies and will provide a list of blockers that stop your project from upgrading.
+On top of the platform upgrade, it will test if your project is able to run using the latest version of your direct Composer dependencies and will provide a list of blockers that stop you from upgrading.
 
 ### 3. Code Upgrade
 
-Finally, Future will test if your project is compatible with the latest coding style rules and methodologies with the help of Rector.
+Finally, Future will test if your project is compatible with the latest coding standards with the help of [Rector](https://github.com/rectorphp/rector).
 
 ## Setup
 
 ### Prerequisites
-* Composer-based Project
-* Continuous Integration Pipeline
-* Test Suite
+* A Composer-based Project
+* A Continuous Integration Pipeline
+* A Test Suite
 
 ### Install
 ```bash
@@ -28,23 +28,17 @@ composer require --dev evozon/future
 
 ### Configure
 
-TBC
+Please refer to the links below for information on how to configure Future:
+
+* [Configuring Future for GitLab](https://github.com/evozon/future/blob/master/docs/GITLAB.md)
+* [Configuring Future for GitHub](https://github.com/evozon/future/blob/master/docs/GITHUB.md)
 
 ## Running Future
 
-After you have installed and configured Future in your project, run the pipeline and check the output of the `future-proofing` job.
-
-### Output examples
-#### Everything is prepared for the upgrade
-(output from the pipeline here)
-#### This that should be covered before the upgrade
-(output from the pipeline here)
-
-## Documentation
-TBC
+After you have installed and configured Future, run the pipeline and check the output of the `future-proofing` job.
 
 ## Contribute
-TBC
+Please refer to [CONTRIBUTING.md](https://github.com/evozon/future/blob/master/CONTRIBUTING.md) for information on how to contribute to Future.
 
 ## Recommendations
 Future can be used to test if you can upgrade everything at once: the latest PHP version, the latest versions for your Composer dependencies, and the latest codebase standards. We advise against this since it may lead to massive amounts of changes that are hard to review and test.
@@ -53,4 +47,4 @@ We recommend splitting the upgrade process into stages. Start with the PHP versi
 
 <hr/>
 
-Thanks to [Rector](https://github.com/rectorphp/rector) for providing the tool that does the heavy lifting. Future uses Rector to upgrade the codebase to the latest standards.
+Thanks to [Rector](https://github.com/rectorphp/rector) for providing the tool that does the heavy lifting. Future uses Rector to upgrade the codebase to the latest coding standards.
