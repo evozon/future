@@ -1,13 +1,8 @@
-.future-config:
-    #replace this with the base setup of your project
-    #if your project has a Dockerfile, use it and change the "FROM" section to php:fpm-alpine
-    image: php:fpm-alpine
-
 future-proofing:
-    extends: .future-config
     stage: future
     allow_failure: true
     needs: []
+    image: php:fpm-alpine #replace this with the platform you target for the upgrade
     #services: define the services required to run your test suite
     #variables: define the variables required to run your test suite
     before_script:
@@ -73,22 +68,3 @@ future-proofing:
 
         #- vendor/bin/codeception
         #- vendor/bin/behat
-
-    after_script:
-        - vendor/bin/future summary
-        #You can safely upgrade the PHP version to ${current_image}
-        #You can safely upgrade ${composer_package_name} to ${new_version}
-        #You can safely apply rector to modernize ${number_of_updated_files} files in your project
-        #Also specify the rectors that have been applied (dump rector.php)
-
-        #You CANNOT safely upgrade the PHP version to ${current_image}
-
-        #You can safely upgrade the PHP version to ${current_image}
-        #You CANNOT safely upgrade your Composer packages because of incompatibility issues (composer update output)
-
-        #You can safely upgrade the PHP version to ${current_image}
-        #You can safely upgrade ${composer_package_name} to ${new_version}
-        #You CANNOT safely apply rector to modernize your project
-
-        #You can safely upgrade the PHP version to ${current_image}
-        #You CANNOT safely upgrade your project because tests have failed (+ output de PHPUnit)
