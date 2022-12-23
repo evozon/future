@@ -1,0 +1,83 @@
+name: Future Proofing
+on: push
+jobs:
+    future-proofing:
+        name: Future Proofing
+        runs-on: ubuntu-latest #replace this with the platform you target for the upgrade
+        #services: define the services required to run your test suite
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: 8.2 #replace this with the version you target for the upgrade
+                  tools: composer:v2
+
+            #run any scripts and installation steps required for executing your project's test suite
+
+            - name: Install dependencies
+              run: composer install --no-interaction --no-scripts --prefer-dist
+              #env: define the variables required to install your project's dependencies
+
+            - name: Bump PHP
+              run: vendor/bin/future bump-php
+
+            - name: Bump dependencies
+              run: vendor/bin/future bump-deps
+
+            - name: Update dependencies
+              run: composer update -W --no-interaction --no-scripts
+
+            - name: Update codebase
+              run: |
+                  vendor/bin/rector init
+
+                  vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::CODE_QUALITY
+                  vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::CODING_STYLE
+                  vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::DEAD_CODE
+                  vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::EARLY_RETURN
+                  vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::PSR_4
+                  vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::PRIVATIZATION
+                  vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::TYPE_DECLARATION
+                  vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\LevelSetList::UP_TO_PHP_82
+
+                  vendor/bin/future add-rule \\Rector\\DependencyInjection\\Rector\\Class_\\ActionInjectionToConstructorInjectionRector::class
+                  vendor/bin/future add-rule \\Rector\\RemovingStatic\\Rector\\ClassMethod\\LocallyCalledStaticMethodToNonStaticRector::class
+                  vendor/bin/future add-rule \\Rector\\Restoration\\Rector\\Property\\MakeTypedPropertyNullableIfCheckedRector::class
+                  vendor/bin/future add-rule \\Rector\\Restoration\\Rector\\Class_\\RemoveFinalFromEntityRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ArrowFunction\\AddArrowFunctionReturnTypeRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\Closure\\AddClosureReturnTypeRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\AddMethodCallBasedStrictParamTypeRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\AddReturnTypeDeclarationBasedOnParentClassMethodRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\AddVoidReturnTypeWhereNoReturnRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\ParamTypeByMethodCallTypeRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\ParamTypeByParentCallTypeRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\Param\\ParamTypeFromStrictTypedPropertyRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\ReturnTypeFromReturnNewRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\ReturnTypeFromStrictBoolReturnExprRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\ReturnTypeFromStrictNativeCallRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\ReturnTypeFromStrictNewArrayRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\ReturnTypeFromStrictTypedPropertyRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\Property\\TypedPropertyFromAssignsRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\Property\\TypedPropertyFromStrictConstructorRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\Property\\TypedPropertyFromStrictGetterMethodReturnTypeRector::class
+                  vendor/bin/future add-rule \\Rector\\TypeDeclaration\\Rector\\Property\\TypedPropertyFromStrictSetUpRector::class
+                  vendor/bin/future add-rule \\Rector\\Visibility\\Rector\\ClassMethod\\ExplicitPublicClassMethodRector::class
+
+                  vendor/bin/future skip \\Rector\\Php80\\Rector\\Class_\\ClassPropertyAssignToConstructorPromotionRector::class
+                  vendor/bin/future skip \\Rector\\Privatization\\Rector\\Class_\\FinalizeClassesWithoutChildrenRector::class
+                  vendor/bin/future skip \\Rector\\CodingStyle\\Rector\\ClassConst\\VarConstantCommentRector::class
+                  vendor/bin/future skip \\Rector\\DeadCode\\Rector\\ClassMethod\\RemoveUnusedPrivateMethodRector::class
+                  vendor/bin/future skip \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\AddArrayParamDocTypeRector::class
+                  vendor/bin/future skip \\Rector\\TypeDeclaration\\Rector\\ClassMethod\\AddArrayReturnDocTypeRector::class
+                  vendor/bin/future skip \\Rector\\DeadCode\\Rector\\MethodCall\\RemoveEmptyMethodCallRector::class
+                  vendor/bin/future skip \\Rector\\CodingStyle\\Rector\\String_\\SymplifyQuoteEscapeRector::class
+                  vendor/bin/future skip \\Rector\\CodingStyle\\Rector\\Catch_\\CatchExceptionNameMatchingTypeRector::class
+
+                  vendor/bin/rector process src --no-progress-bar --no-diffs
+
+            #run your project's test suite
+            #- name: Execute PHPUnit tests
+            #  run: SYMFONY_DEPRECATIONS_HELPER=disabled vendor/bin/phpunit --no-interaction --colors=never
