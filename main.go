@@ -13,6 +13,7 @@ func main() {
 	rootCmd.AddCommand(addRule)
 	rootCmd.AddCommand(addRuleset)
 	rootCmd.AddCommand(skip)
+	rootCmd.AddCommand(runCmd)
 
 	Execute()
 }
