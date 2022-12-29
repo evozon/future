@@ -1,4 +1,4 @@
-package main
+package rector
 
 import (
 	"bufio"
@@ -16,11 +16,11 @@ var (
 	spaceIndentationRegex    *regexp.Regexp
 )
 
-const skipsMethod string = "$rectorConfig->skip"
-const ruleMethod string = "$rectorConfig->rule"
-const rulesMethod string = "$rectorConfig->rules"
-const setsMethod string = "$rectorConfig->sets"
-const rectorMethodDefinition = "return static function (RectorConfig $rectorConfig): void"
+const SkipsMethod string = "$rectorConfig->skip"
+const RuleMethod string = "$rectorConfig->rule"
+const RulesMethod string = "$rectorConfig->rules"
+const SetsMethod string = "$rectorConfig->sets"
+const MethodDefinition = "return static function (RectorConfig $rectorConfig): void"
 
 func init() {
 	var err error
@@ -40,7 +40,7 @@ func init() {
 	}
 }
 
-func injectLine(lines []string, index int, line string) []string {
+func InjectLine(lines []string, index int, line string) []string {
 	lines[index-1] = ensureLineHasComma(lines[index-1])
 
 	line = ensureGlobalNamespace(line)
@@ -57,7 +57,79 @@ func injectLine(lines []string, index int, line string) []string {
 	return lines
 }
 
-func findLineIndexFor(lines []string, needle string) (int, error) {
+func InjectSkipMethod(lines []string, rule string) []string {
+	index, err := FindLineIndexFor(lines, MethodDefinition)
+	if err != nil {
+		log.Fatalf("could not find the definition of the main method in the rector.php file: %s", err)
+	}
+
+	index++
+
+	lines = append(
+		lines[:index],
+		append(
+			[]string{fmt.Sprintf("\t%s([\n\t\t%s\n\t]);", SkipsMethod, rule)},
+			lines[index:]...,
+		)...,
+	)
+
+	return lines
+}
+
+func InjectSetsMethod(lines []string, set string) []string {
+	index, err := FindLineIndexFor(lines, MethodDefinition)
+	if err != nil {
+		log.Fatalf("could not find the definition of the main method in the rector.php file: %s", err)
+	}
+
+	index++
+
+	lines = append(
+		lines[:index],
+		append(
+			[]string{fmt.Sprintf("\t%s([\n\t\t%s\n\t]);", SetsMethod, set)},
+			lines[index:]...,
+		)...,
+	)
+
+	return lines
+}
+
+func WriteRectorFile(file *os.File, lines []string) error {
+	if _, err := file.Seek(0, 0); err != nil {
+		return fmt.Errorf("failed seeking to the beginning of the file: %s", err)
+	}
+
+	if err := file.Truncate(0); err != nil {
+		return fmt.Errorf("failed truncating the file: %s", err)
+	}
+
+	for _, line := range lines {
+		if _, err := file.WriteString(line + "\n"); err != nil {
+			return fmt.Errorf("failed writing line to file: %s", err)
+		}
+	}
+
+	return nil
+}
+
+func LoadRectorFile() (*os.File, []string, error) {
+	const rectorFile = "rector.php"
+
+	file, err := os.OpenFile(rectorFile, os.O_RDWR, 0644)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed opening rector.php file: %s", err)
+	}
+
+	lines, err := linesFromReader(file)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed reading rector.php file: %s", err)
+	}
+
+	return file, lines, nil
+}
+
+func FindLineIndexFor(lines []string, needle string) (int, error) {
 	for index, line := range lines {
 		// are we on the line that represents a function call end?
 		if !closingFunctionCallRegex.MatchString(line) {
@@ -73,44 +145,6 @@ func findLineIndexFor(lines []string, needle string) (int, error) {
 	}
 
 	return 0, fmt.Errorf("failed finding %s in rector.php", needle)
-}
-
-func injectSkipMethod(lines []string, rule string) []string {
-	index, err := findLineIndexFor(lines, rectorMethodDefinition)
-	if err != nil {
-		log.Fatalf("could not find the definition of the main method in the rector.php file: %s", err)
-	}
-
-	index++
-
-	lines = append(
-		lines[:index],
-		append(
-			[]string{fmt.Sprintf("\t%s([\n\t\t%s\n\t]);", skipsMethod, rule)},
-			lines[index:]...,
-		)...,
-	)
-
-	return lines
-}
-
-func injectSetsMethod(lines []string, set string) []string {
-	index, err := findLineIndexFor(lines, rectorMethodDefinition)
-	if err != nil {
-		log.Fatalf("could not find the definition of the main method in the rector.php file: %s", err)
-	}
-
-	index++
-
-	lines = append(
-		lines[:index],
-		append(
-			[]string{fmt.Sprintf("\t%s([\n\t\t%s\n\t]);", setsMethod, set)},
-			lines[index:]...,
-		)...,
-	)
-
-	return lines
 }
 
 func ensureGlobalNamespace(line string) string {
@@ -145,40 +179,6 @@ func computeIndentation(line string) string {
 	}
 
 	return ""
-}
-
-func writeRectorFile(file *os.File, lines []string) error {
-	if _, err := file.Seek(0, 0); err != nil {
-		return fmt.Errorf("failed seeking to the beginning of the file: %s", err)
-	}
-
-	if err := file.Truncate(0); err != nil {
-		return fmt.Errorf("failed truncating the file: %s", err)
-	}
-
-	for _, line := range lines {
-		if _, err := file.WriteString(line + "\n"); err != nil {
-			return fmt.Errorf("failed writing line to file: %s", err)
-		}
-	}
-
-	return nil
-}
-
-func loadRectorFile() (*os.File, []string, error) {
-	const rectorFile = "rector.php"
-
-	file, err := os.OpenFile(rectorFile, os.O_RDWR, 0644)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed opening rector.php file: %s", err)
-	}
-
-	lines, err := linesFromReader(file)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed reading rector.php file: %s", err)
-	}
-
-	return file, lines, nil
 }
 
 func linesFromReader(r io.Reader) ([]string, error) {

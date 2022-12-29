@@ -1,4 +1,4 @@
-package main
+package future
 
 import (
 	"fmt"
@@ -6,9 +6,11 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"future/internal/rector"
 )
 
-var addRule = &cobra.Command{
+var AddRule = &cobra.Command{
 	Use:   "add-rule",
 	Short: "Adds a rector rule",
 	Long:  `Edits the rector.php file to add a new rule`,
@@ -17,26 +19,26 @@ var addRule = &cobra.Command{
 			log.Fatalf("Invalid or missing argument! Example: \\\\Rector\\\\Set\\\\ValueObject\\\\LevelSetList::UP_TO_PHP_81::class\n")
 		}
 
-		file, lines, err := loadRectorFile()
+		file, lines, err := rector.LoadRectorFile()
 		if err != nil {
 			log.Fatalf(err.Error())
 		}
 		defer file.Close()
 
-		ruleInjectionPoint, err := findLineIndexFor(lines, rulesMethod)
+		ruleInjectionPoint, err := rector.FindLineIndexFor(lines, rector.RulesMethod)
 		if err != nil {
 			// if we can't find a ->rules([...]) section, we'll try to find a ->rule(...) section and convert it to a ->rules section
 			lines = convertSingleRuleToMultipleRules(lines)
 
-			ruleInjectionPoint, err = findLineIndexFor(lines, rulesMethod)
+			ruleInjectionPoint, err = rector.FindLineIndexFor(lines, rector.RulesMethod)
 			if err != nil {
 				log.Fatalf(err.Error())
 			}
 		}
 
-		lines = injectLine(lines, ruleInjectionPoint, args[0])
+		lines = rector.InjectLine(lines, ruleInjectionPoint, args[0])
 
-		if err := writeRectorFile(file, lines); err != nil {
+		if err := rector.WriteRectorFile(file, lines); err != nil {
 			log.Fatalf(err.Error())
 		}
 	},
@@ -44,13 +46,13 @@ var addRule = &cobra.Command{
 
 func convertSingleRuleToMultipleRules(lines []string) []string {
 	for index, line := range lines {
-		if !strings.Contains(line, ruleMethod) {
+		if !strings.Contains(line, rector.RuleMethod) {
 			continue
 		}
 
-		indentation := line[:strings.Index(line, ruleMethod)]
+		indentation := line[:strings.Index(line, rector.RuleMethod)]
 
-		lines[index] = fmt.Sprintf("%s%s([", indentation, rulesMethod)
+		lines[index] = fmt.Sprintf("%s%s([", indentation, rector.RulesMethod)
 		lines = append(
 			lines[:index+1],
 			append(

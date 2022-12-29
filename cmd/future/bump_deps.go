@@ -1,4 +1,4 @@
-package main
+package future
 
 import (
 	"encoding/json"
@@ -6,14 +6,16 @@ import (
 	"os/exec"
 
 	"github.com/spf13/cobra"
+
+	"future/internal/composer"
 )
 
-var bumpDeps = &cobra.Command{
+var BumpDeps = &cobra.Command{
 	Use:   "bump-deps",
 	Short: "Bump composer dependencies",
 	Long:  `Tries to bump all composer dependencies to the latest version`,
 	Run: func(cmd *cobra.Command, _ []string) {
-		s, file, err := readComposerJson()
+		s, file, err := composer.ReadComposerJson()
 		if err != nil {
 			log.Fatalf("could not read composer.json: %v\n", err)
 		}
@@ -23,19 +25,19 @@ var bumpDeps = &cobra.Command{
 
 		updateSchema(deps, &s)
 
-		if err := writeComposerJson(file, s); err != nil {
+		if err := composer.WriteComposerJson(file, s); err != nil {
 			log.Fatalf("could not write composer.json: %v\n", err)
 		}
 	},
 }
 
-func updateSchema(deps outdatedDeps, s *schema) {
+func updateSchema(deps outdatedDeps, s *composer.Schema) {
 	// TODO: When trying to bump a dep, do some validation based on the other properties besides Name and Latest
 	// TODO: We have a lot of info we can use
 	for _, dep := range deps.Installed {
-		err := s.setRequireDepVersion(dep.Name, dep.Latest)
+		err := s.SetRequireDepVersion(dep.Name, dep.Latest)
 		if err != nil {
-			err = s.setRequireDevDepVersion(dep.Name, dep.Latest)
+			err = s.SetRequireDevDepVersion(dep.Name, dep.Latest)
 			if err != nil {
 				log.Printf("could not find dep %s in composer.json. tried both require and require-dev", dep.Name)
 				continue

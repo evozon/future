@@ -1,4 +1,4 @@
-package main
+package future
 
 import (
 	"fmt"
@@ -7,13 +7,15 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
+
+	"future/internal/composer"
 )
 
 const (
 	defaultPhpVersion = "8.2"
 )
 
-var bumpPhp = &cobra.Command{
+var BumpPhp = &cobra.Command{
 	Use:   "bump-php",
 	Short: "Bump PHP version",
 	Long:  `Bump PHP version in composer.json. Must be ran in the root of the project, where the composer.json file is located`,
@@ -23,15 +25,15 @@ var bumpPhp = &cobra.Command{
 			phpVersion = defaultPhpVersion
 		}
 
-		s, file, err := readComposerJson()
+		s, file, err := composer.ReadComposerJson()
 		if err != nil {
 			log.Fatalf("could not read composer.json: %v\n", err)
 		}
 		defer file.Close()
 
-		s.setPhpVersion(phpVersion)
+		s.SetPhpVersion(phpVersion)
 
-		if err := writeComposerJson(file, s); err != nil {
+		if err := composer.WriteComposerJson(file, s); err != nil {
 			log.Fatalf("could not write composer.json: %v\n", err)
 		}
 	},

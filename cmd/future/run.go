@@ -1,4 +1,4 @@
-package main
+package future
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var runCmd = &cobra.Command{
+var RunCmd = &cobra.Command{
 	Use:                "run",
 	Short:              "Run any shell command through the future binary",
 	Long:               `Run any shell command through the future binary`,

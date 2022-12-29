@@ -1,4 +1,4 @@
-package main
+package composer
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-type schema struct {
+type Schema struct {
 	Name             string                 `json:"name,omitempty"`
 	Description      string                 `json:"description,omitempty"`
 	Version          string                 `json:"version,omitempty"`
@@ -56,7 +56,7 @@ type schema struct {
 	Bin          []string               `json:"bin,omitempty"`
 }
 
-func (s *schema) setPhpVersion(version string) {
+func (s *Schema) SetPhpVersion(version string) {
 	s.Require["php"] = version
 	if s.Config != nil {
 		platform, isMap := s.Config["platform"].(map[string]interface{})
@@ -67,7 +67,7 @@ func (s *schema) setPhpVersion(version string) {
 	}
 }
 
-func (s *schema) setRequireDepVersion(dep, version string) error {
+func (s *Schema) SetRequireDepVersion(dep, version string) error {
 	_, ok := s.Require[dep]
 	if !ok {
 		return fmt.Errorf("dependency %s not found in require", dep)
@@ -78,7 +78,7 @@ func (s *schema) setRequireDepVersion(dep, version string) error {
 	return nil
 }
 
-func (s *schema) setRequireDevDepVersion(dep, version string) error {
+func (s *Schema) SetRequireDevDepVersion(dep, version string) error {
 	_, ok := s.RequireDev[dep]
 	if !ok {
 		return fmt.Errorf("dependency %s not found in require-dev", dep)
@@ -89,7 +89,7 @@ func (s *schema) setRequireDevDepVersion(dep, version string) error {
 	return nil
 }
 
-func writeComposerJson(file *os.File, s schema) error {
+func WriteComposerJson(file *os.File, s Schema) error {
 	if err := file.Truncate(0); err != nil {
 		log.Fatalf("failed truncating composer.json: %v\n", err)
 	}
@@ -104,8 +104,8 @@ func writeComposerJson(file *os.File, s schema) error {
 	return nil
 }
 
-func readComposerJson() (schema, *os.File, error) {
-	var s schema
+func ReadComposerJson() (Schema, *os.File, error) {
+	var s Schema
 
 	const pathToComposerJson = "./composer.json"
 	file, err := os.OpenFile(pathToComposerJson, os.O_RDWR, 0644)

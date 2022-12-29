@@ -1,13 +1,15 @@
-package main
+package future
 
 import (
 	"log"
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"future/internal/rector"
 )
 
-var addRuleset = &cobra.Command{
+var AddRuleset = &cobra.Command{
 	Use:   "add-ruleset",
 	Short: "Adds a rector ruleset",
 	Long:  `Edits the rector.php file to add a new ruleset`,
@@ -16,7 +18,7 @@ var addRuleset = &cobra.Command{
 			log.Fatalf("Invalid or missing argument! Example: \\\\Rector\\\\Set\\\\ValueObject\\\\LevelSetList::UP_TO_PHP_81\n")
 		}
 
-		file, lines, err := loadRectorFile()
+		file, lines, err := rector.LoadRectorFile()
 		if err != nil {
 			log.Fatalf(err.Error())
 		}
@@ -25,17 +27,17 @@ var addRuleset = &cobra.Command{
 
 		setsInjectionPoint, err := findLineIndexForSetsMethod(lines)
 		if err != nil {
-			lines = injectSetsMethod(lines, args[0])
-			if err := writeRectorFile(file, lines); err != nil {
+			lines = rector.InjectSetsMethod(lines, args[0])
+			if err := rector.WriteRectorFile(file, lines); err != nil {
 				log.Fatalf(err.Error())
 			}
 
 			return
 		}
 
-		lines = injectLine(lines, setsInjectionPoint, args[0])
+		lines = rector.InjectLine(lines, setsInjectionPoint, args[0])
 
-		if err := writeRectorFile(file, lines); err != nil {
+		if err := rector.WriteRectorFile(file, lines); err != nil {
 			log.Fatalf(err.Error())
 		}
 	},
@@ -61,14 +63,14 @@ func isRulesetArgumentValid(args []string) bool {
 }
 
 func findLineIndexForSetsMethod(lines []string) (int, error) {
-	index, err := findLineIndexFor(lines, setsMethod)
+	index, err := rector.FindLineIndexFor(lines, rector.SetsMethod)
 
 	for err == nil {
 		if !strings.Contains(lines[index], "//") {
 			return index, err
 		}
 
-		index, err = findLineIndexFor(lines[index:], setsMethod)
+		index, err = rector.FindLineIndexFor(lines[index:], rector.SetsMethod)
 	}
 
 	return index, err

@@ -1,13 +1,15 @@
-package main
+package future
 
 import (
 	"log"
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"future/internal/rector"
 )
 
-var skip = &cobra.Command{
+var Skip = &cobra.Command{
 	Use:   "skip",
 	Short: "Skips a rector ruleset",
 	Long:  `Edits the rector.php file to mark a ruleset as skipped`,
@@ -16,26 +18,26 @@ var skip = &cobra.Command{
 			log.Fatalf("Invalid or missing argument! Example: \\\\Rector\\\\Set\\\\ValueObject\\\\LevelSetList::UP_TO_PHP_81::class\n")
 		}
 
-		file, lines, err := loadRectorFile()
+		file, lines, err := rector.LoadRectorFile()
 		if err != nil {
 			log.Fatalf(err.Error())
 		}
 
 		defer file.Close()
 
-		skipInjectionPoint, err := findLineIndexFor(lines, skipsMethod)
+		skipInjectionPoint, err := rector.FindLineIndexFor(lines, rector.SkipsMethod)
 		if err != nil {
-			lines = injectSkipMethod(lines, args[0])
-			if err := writeRectorFile(file, lines); err != nil {
+			lines = rector.InjectSkipMethod(lines, args[0])
+			if err := rector.WriteRectorFile(file, lines); err != nil {
 				log.Fatalf(err.Error())
 			}
 
 			return
 		}
 
-		lines = injectLine(lines, skipInjectionPoint, args[0])
+		lines = rector.InjectLine(lines, skipInjectionPoint, args[0])
 
-		if err := writeRectorFile(file, lines); err != nil {
+		if err := rector.WriteRectorFile(file, lines); err != nil {
 			log.Fatalf(err.Error())
 		}
 	},
