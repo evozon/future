@@ -16,7 +16,7 @@ type schema struct {
 	Homepage         string                 `json:"homepage,omitempty"`
 	Time             string                 `json:"time,omitempty"`
 	License          string                 `json:"license,omitempty"`
-	Authors          map[string]interface{} `json:"authors,omitempty"`
+	Authors          []interface{}          `json:"authors,omitempty"`
 	Support          map[string]string      `json:"support,omitempty"`
 	Require          map[string]string      `json:"require,omitempty"`
 	RequireDev       map[string]string      `json:"require-dev,omitempty"`
