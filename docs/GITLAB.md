@@ -9,7 +9,7 @@ stages:
     - future
 ```
 
-2. Copy the job defined in the `future-proofing.yaml` file ([link](https://github.com/evozon/future/blob/master/future-proofing.yaml)) into `.gitlab-ci.yml`
+2. Copy the job defined in the `vendor/evozon/future/ci/gitlab/future-proofing.yaml` file ([link](https://github.com/evozon/future/blob/master/ci/gitlab/future-proofing.yaml)) into `.gitlab-ci.yml`
 
 ```
 future-proofing:
@@ -69,7 +69,7 @@ future-proofing:
 future-proofing:
     ...
     script:
-        - vendor/bin/future bump-php latest
+        - vendor/bin/future bump-php
         - vendor/bin/future bump-deps
         - composer update -W --no-interaction --no-scripts
         ...
