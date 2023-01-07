@@ -12,12 +12,16 @@ func RootCmd() *cobra.Command {
 		},
 	}
 
+	SummaryCmd.AddCommand(summaryDaemon)
+	SummaryCmd.AddCommand(summaryShow)
+
 	rootCmd.AddCommand(BumpPhp)
 	rootCmd.AddCommand(BumpDeps)
 	rootCmd.AddCommand(AddRule)
 	rootCmd.AddCommand(AddRuleset)
 	rootCmd.AddCommand(Skip)
 	rootCmd.AddCommand(RunCmd)
+	rootCmd.AddCommand(SummaryCmd)
 
 	return rootCmd
 }
