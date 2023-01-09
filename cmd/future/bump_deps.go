@@ -13,12 +13,13 @@ import (
 var BumpDeps = &cobra.Command{
 	Use:   "bump-deps",
 	Short: "Bump composer dependencies",
-	Long:  `Tries to bump all composer dependencies to the latest version`,
+	Long:  `Bump all Composer dependencies to the latest version. Must be run where the composer.json file is located`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		s, file, err := composer.ReadComposerJson()
 		if err != nil {
 			log.Fatalf("could not read composer.json: %v\n", err)
 		}
+
 		defer file.Close()
 
 		deps, err := getDepUpgrades()
@@ -27,7 +28,20 @@ var BumpDeps = &cobra.Command{
 
 		if err := composer.WriteComposerJson(file, s); err != nil {
 			log.Fatalf("could not write composer.json: %v\n", err)
+			return
 		}
+
+		if len(deps.Installed) == 0 {
+			log.Print("all dependencies are at their latest version - nothing to update\n")
+			return
+		}
+
+		log.Print("successfully updated the following dependencies in the composer.json file:\n")
+		for _, dep := range deps.Installed {
+			log.Printf("%s: %s -> %s\n", dep.Name, dep.Version, dep.Latest)
+		}
+
+		log.Print("run `composer update -W` to apply the changes\n")
 	},
 }
 
@@ -47,19 +61,16 @@ func updateSchema(deps outdatedDeps, s *composer.Schema) {
 
 	extra, ok := s.Extra.(map[string]interface{})
 	if !ok {
-		log.Printf("could not decode extra in composer.json")
 		return
 	}
 
 	symfony, ok := extra["symfony"].(map[string]interface{})
 	if !ok {
-		log.Printf("could not decode extra in composer.json")
 		return
 	}
 
 	_, ok = symfony["require"]
 	if !ok {
-		log.Printf("could not find require in extra.symfony in composer.json")
 		return
 	}
 
