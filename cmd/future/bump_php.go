@@ -18,7 +18,7 @@ const (
 var BumpPhp = &cobra.Command{
 	Use:   "bump-php",
 	Short: "Bump PHP version",
-	Long:  `Bump PHP version in composer.json. Must be ran in the root of the project, where the composer.json file is located`,
+	Long:  `Bump PHP version in composer.json. Must be run where the composer.json file is located`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		phpVersion, err := findPhpVersion()
 		if err != nil {
@@ -29,6 +29,7 @@ var BumpPhp = &cobra.Command{
 		if err != nil {
 			log.Fatalf("could not read composer.json: %v\n", err)
 		}
+
 		defer file.Close()
 
 		s.SetPhpVersion(phpVersion)
@@ -36,6 +37,8 @@ var BumpPhp = &cobra.Command{
 		if err := composer.WriteComposerJson(file, s); err != nil {
 			log.Fatalf("could not write composer.json: %v\n", err)
 		}
+
+		log.Printf("successfully bumped the PHP version in the composer.json file to %s\n", phpVersion)
 	},
 }
 
