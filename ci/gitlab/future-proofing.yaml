@@ -7,7 +7,6 @@ future-proofing:
     #variables: define the variables required to run your test suite
     before_script:
         #perform all the necessary steps required to run your project's test suite
-        - vendor/bin/future collect-output
         - curl --silent --show-error "https://getcomposer.org/installer" | php -- --install-dir=/usr/local/bin --filename=composer
         - composer install --no-interaction --no-scripts --prefer-dist
     script:
