@@ -1,0 +1,31 @@
+syntax = "proto3";
+option go_package = "future/internal/collector";
+
+service Collector {
+    rpc Push(PushRequest) returns (PushResponse);
+    rpc Summary(SummaryRequest) returns (SummaryResponse);
+    rpc Shutdown(ShutdownRequest) returns (Void);
+}
+
+message Void {
+}
+
+message PushRequest {
+    string command = 1;
+    string output = 2;
+    int64 status = 3;
+}
+
+message PushResponse {
+    int64 status = 1;
+}
+
+message ShutdownRequest {
+}
+
+message SummaryRequest {
+}
+
+message SummaryResponse {
+    map<string, string> summary = 1;
+}

@@ -18,6 +18,8 @@ func RootCmd() *cobra.Command {
 	rootCmd.AddCommand(AddRuleset)
 	rootCmd.AddCommand(Skip)
 	rootCmd.AddCommand(RunCmd)
+	rootCmd.AddCommand(Collect)
+	rootCmd.AddCommand(Shutdown)
 
 	return rootCmd
 }

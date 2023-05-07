@@ -3,11 +3,13 @@ package future
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"regexp"
 
 	"github.com/spf13/cobra"
 
+	"future/internal/collector"
 	"future/internal/composer"
 )
 
@@ -20,6 +22,9 @@ var BumpPhp = &cobra.Command{
 	Short: "Bump PHP version",
 	Long:  `Bump PHP version in composer.json. Must be run where the composer.json file is located`,
 	Run: func(cmd *cobra.Command, _ []string) {
+		client, conn := collector.NewClient()
+		defer conn.Close()
+
 		phpVersion, err := findPhpVersion()
 		if err != nil {
 			phpVersion = defaultPhpVersion
@@ -27,7 +32,18 @@ var BumpPhp = &cobra.Command{
 
 		s, file, err := composer.ReadComposerJson()
 		if err != nil {
-			log.Fatalf("could not read composer.json: %v\n", err)
+			msg := fmt.Sprintf("could not read composer.json: %v\n", err)
+			_, err := client.Push(cmd.Context(), &collector.PushRequest{
+				Command: cmd.Name(),
+				Output:  msg,
+				Status:  1,
+			})
+
+			if err != nil {
+				log.Fatal(msg)
+			}
+
+			os.Exit(1)
 		}
 
 		defer file.Close()
@@ -35,10 +51,33 @@ var BumpPhp = &cobra.Command{
 		s.SetPhpVersion(phpVersion)
 
 		if err := composer.WriteComposerJson(file, s); err != nil {
-			log.Fatalf("could not write composer.json: %v\n", err)
+			msg := fmt.Sprintf("could not write composer.json: %v\n", err)
+
+			_, err := client.Push(cmd.Context(), &collector.PushRequest{
+				Command: cmd.Name(),
+				Output:  msg,
+				Status:  1,
+			})
+
+			if err != nil {
+				log.Fatal(msg)
+			}
+
+			os.Exit(1)
 		}
 
-		log.Printf("successfully bumped the PHP version in the composer.json file to %s\n", phpVersion)
+		msg := fmt.Sprintf("successfully bumped PHP version in composer.json to %s\n", phpVersion)
+		_, err = client.Push(cmd.Context(), &collector.PushRequest{
+			Command: cmd.Name(),
+			Output:  msg,
+			Status:  0,
+		})
+
+		if err != nil {
+			log.Printf("%+v", err)
+		}
+
+		os.Exit(0)
 	},
 }
 
