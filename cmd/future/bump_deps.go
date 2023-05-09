@@ -2,8 +2,12 @@ package future
 
 import (
 	"encoding/json"
+	"fmt"
+	"future/internal/collector"
 	"log"
+	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -12,12 +16,26 @@ import (
 
 var BumpDeps = &cobra.Command{
 	Use:   "bump-deps",
-	Short: "Bump composer dependencies",
+	Short: "Bump Composer dependencies",
 	Long:  `Bump all Composer dependencies to the latest version. Must be run where the composer.json file is located`,
 	Run: func(cmd *cobra.Command, _ []string) {
+		client, conn := collector.NewClient()
+		defer conn.Close()
+
 		s, file, err := composer.ReadComposerJson()
 		if err != nil {
-			log.Fatalf("could not read composer.json: %v\n", err)
+			msg := fmt.Sprintf("could not read composer.json: %v\n", err)
+			_, err := client.Push(cmd.Context(), &collector.PushRequest{
+				Command: cmd.Name(),
+				Output:  msg,
+				Status:  1,
+			})
+
+			if err != nil {
+				log.Fatal(msg)
+			}
+
+			os.Exit(1)
 		}
 
 		defer file.Close()
@@ -27,21 +45,54 @@ var BumpDeps = &cobra.Command{
 		updateSchema(deps, &s)
 
 		if err := composer.WriteComposerJson(file, s); err != nil {
-			log.Fatalf("could not write composer.json: %v\n", err)
-			return
+			msg := fmt.Sprintf("could not write composer.json: %v\n", err)
+
+			_, err := client.Push(cmd.Context(), &collector.PushRequest{
+				Command: cmd.Name(),
+				Output:  msg,
+				Status:  1,
+			})
+
+			if err != nil {
+				log.Fatal(msg)
+			}
+
+			os.Exit(1)
 		}
 
 		if len(deps.Installed) == 0 {
-			log.Print("all dependencies are at their latest version - nothing to update\n")
-			return
+			_, err := client.Push(cmd.Context(), &collector.PushRequest{
+				Command: cmd.Name(),
+				Output:  "all dependencies are at their latest version - nothing to update\n",
+				Status:  0,
+			})
+
+			if err != nil {
+				log.Printf("%+v", err)
+			}
+
+			os.Exit(0)
 		}
 
-		log.Print("successfully updated the following dependencies in the composer.json file:\n")
+		var builder strings.Builder
+		builder.WriteString("successfully updated the following dependencies in the composer.json file:\n")
 		for _, dep := range deps.Installed {
-			log.Printf("%s: %s -> %s\n", dep.Name, dep.Version, dep.Latest)
+			builder.WriteString(fmt.Sprintf("%s: %s -> %s\n", dep.Name, dep.Version, dep.Latest))
 		}
 
-		log.Print("run `composer update -W` to apply the changes\n")
+		builder.WriteString("run `composer update -W` to apply the changes\n")
+
+		_, err = client.Push(cmd.Context(), &collector.PushRequest{
+			Command: cmd.Name(),
+			Output:  builder.String(),
+			Status:  0,
+		})
+
+		if err != nil {
+			log.Printf("%+v", err)
+		}
+
+		os.Exit(0)
 	},
 }
 
