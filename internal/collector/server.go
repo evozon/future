@@ -17,7 +17,7 @@ type Server struct {
 	srv      *grpc.Server
 	listener net.Listener
 
-	summary map[string]*SummaryData
+	summary []*SummaryData
 }
 
 func NewServer() (*Server, error) {
@@ -28,7 +28,7 @@ func NewServer() (*Server, error) {
 	srv := &Server{
 		srv:      grpc.NewServer(),
 		listener: lis,
-		summary:  make(map[string]*SummaryData),
+		summary:  make([]*SummaryData, 0),
 	}
 
 	RegisterCollectorServer(srv.srv, srv)
@@ -45,10 +45,10 @@ func (s *Server) Stop() {
 }
 
 func (s *Server) Push(_ context.Context, req *PushRequest) (*PushResponse, error) {
-	s.summary[req.Command] = &SummaryData{
-		Output: req.Output,
-		Status: req.Status,
-	}
+	s.summary = append(
+		s.summary,
+		&SummaryData{Command: req.Command, Output: req.Output, Status: req.Status},
+	)
 
 	return &PushResponse{}, nil
 }

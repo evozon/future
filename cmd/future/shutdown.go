@@ -23,13 +23,13 @@ var Shutdown = &cobra.Command{
 			log.Fatalf("could not get the summary: %v\n", err)
 		}
 
-		for command, summaryData := range summaryResponse.GetSummary() {
+		for _, summaryData := range summaryResponse.GetSummary() {
 			result := "successful"
 			if summaryData.Status != 0 {
 				result = "failed"
 			}
 
-			fmt.Printf("%s -> [%s] %s", command, result, summaryData.Output)
+			fmt.Printf("%s -> [%s] %s", summaryData.Command, result, summaryData.Output)
 		}
 
 		_, _ = client.Shutdown(cmd.Context(), &collector.ShutdownRequest{})

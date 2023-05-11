@@ -27,10 +27,11 @@ message SummaryRequest {
 }
 
 message SummaryData {
-    string output = 1;
-    int64 status = 2;
+    string command = 1;
+    string output = 2;
+    int64 status = 3;
 }
 
 message SummaryResponse {
-    map<string, SummaryData> summary = 1;
+    repeated SummaryData summary = 1;
 }
