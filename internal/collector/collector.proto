@@ -26,6 +26,12 @@ message ShutdownRequest {
 message SummaryRequest {
 }
 
+message SummaryData {
+    string command = 1;
+    string output = 2;
+    int64 status = 3;
+}
+
 message SummaryResponse {
-    map<string, string> summary = 1;
+    repeated SummaryData summary = 1;
 }
