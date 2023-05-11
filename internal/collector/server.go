@@ -28,7 +28,6 @@ func NewServer() (*Server, error) {
 	srv := &Server{
 		srv:      grpc.NewServer(),
 		listener: lis,
-		summary:  make([]*SummaryData, 0),
 	}
 
 	RegisterCollectorServer(srv.srv, srv)
