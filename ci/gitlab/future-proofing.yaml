@@ -60,10 +60,13 @@ future-proofing:
         - vendor/bin/future skip \\Rector\\CodingStyle\\Rector\\String_\\SymplifyQuoteEscapeRector::class
         - vendor/bin/future skip \\Rector\\CodingStyle\\Rector\\Catch_\\CatchExceptionNameMatchingTypeRector::class
 
-        - vendor/bin/rector process src --no-progress-bar --no-diffs
+        - vendor/bin/future run vendor/bin/rector process src --no-progress-bar --no-diffs
 
         #run your project's test suite
-        - SYMFONY_DEPRECATIONS_HELPER=disabled vendor/bin/phpunit --no-interaction --colors=never
+        - vendor/bin/future run SYMFONY_DEPRECATIONS_HELPER=disabled vendor/bin/phpunit --no-interaction --colors=never
 
         #- vendor/bin/codeception
         #- vendor/bin/behat
+
+        #last step is to shut down future and display the summary
+        - vendor/bin/future shutdown
