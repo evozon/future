@@ -28,7 +28,7 @@ jobs:
         ...
         services:
             mysqldb:
-                image: mysql:5.7
+                image: mysql:latest
                 ...
 ```
 
