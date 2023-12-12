@@ -23,7 +23,7 @@ future-proofing:
         - vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::PSR_4
         - vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::PRIVATIZATION
         - vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\SetList::TYPE_DECLARATION
-        - vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\LevelSetList::UP_TO_PHP_82
+        - vendor/bin/future add-ruleset \\Rector\\Set\\ValueObject\\LevelSetList::UP_TO_PHP_83
 
         #register rector rules
         - vendor/bin/future add-rule \\Rector\\DependencyInjection\\Rector\\Class_\\ActionInjectionToConstructorInjectionRector::class
